@@ -1,40 +1,64 @@
 <html>
 <head>
     <title>Infinite AFO</title>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="diseño.css">
 </head>
 <body>
     <header>
-        <h1>Welcome to Infinite AFO</h1>
+        <h1>Infinite AFO</h1>
     </header>
     <nav>
         <ul>
-            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html">Inicio</a></li>
 
         </ul>
     </nav>
     <main>
         <br>
-        <section>
-            <input id= "n1" type="number" placeholder="Respuesta...">
+        <section id="juego">
+            <h2>Entrenamiento AFO</h2>
+            <label for="nivel">Seleciona el nivel:</label>
+            <select id="nivel">
+                <option value="facil">Facíl( + , - )</option>
+                <option value="medio">Medio( +, -, * )</option>
+                <option value="dificil">Difícil( +, -, *, / )</option>
+            </select>
+
             <br><br>
-            <input id="operacion" type= "text" placeholder="Ingrese operación...">
+
+            <button id="nuevaPregunta">Nueva Pregunta</button>
+            
             <br><br>
-            <input id="n2" type="number" placeholder="Respuesta...">
+
+            <p id="pregunta">Haz click en "Nueva Pregunta" para comenzar.</p>
+
+            <input id="respuesta" type="number" placeholder="Escribe tu respeusta...">
             <br><br>
-            <button id="calcular">Calcular</button>
+
+            <button id="comprobar">Comprobar Respuesta</button>
+            <p id="feedback"></p>
+
+            <p>
+                puntaje:
+                <span id="puntaje">0</span> /
+                <span id="total">0</span>preguntas
+            </p>
         </section>
+
         <section>
-            <h2>Latest Updates</h2>
-             
-            <p>Stay tuned for the latest news and updates from Infinite AFO.</p>
-             <h2>About Infinite AFO</h2>
-            <p>Infinite AFO es una pagina que busca solucionar el bajo rendimiento de estudiantes.</p>
+            <h2>Últimas novedades</h2>
+            <p>Pronto se agregarán más niveles, estadisticas y desfios en Infinite AFO.</p>
+
+            <h2>Sobre Infinite AFO</h2>
+            <p>
+                Infinite AFO es una página que busca apoyar a estudiantes con bajo rendimiento, 
+                mediante práctica interactiva y retroalimentación inmediata en ejercicios.
+            </p>
         </section>
     </main>
+
     <footer>
-        <p>&copy; 2025 Infinite AFO.</p>
-    </footer>  
-    <script src="main.js"></script>
-</body>
+        <p>&copy;2025 Infinte AFO.</p>
+    </footer>
+    <script src="script.js"></script>
 </html>
