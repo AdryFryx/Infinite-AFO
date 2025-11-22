@@ -1,0 +1,152 @@
+/* Estilos para página de ejercicios */
+.ejercicio-body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+/* Header del Ejercicio */
+.exercise-header {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.exercise-info .badge {
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}
+
+/* Contenedor de Imagen */
+.exercise-image-container {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.image-wrapper {
+    text-align: center;
+}
+
+.exercise-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+}
+
+.image-caption {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Contexto del Ejercicio */
+.exercise-context {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.context-text {
+    line-height: 1.6;
+    color: #495057;
+}
+
+/* Preguntas */
+.exercise-questions {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.question-item {
+    padding: 1rem;
+    border-left: 4px solid #007bff;
+    background-color: #f8f9fa;
+    border-radius: 0 8px 8px 0;
+}
+
+.question-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #495057;
+}
+
+.answer-input {
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.answer-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.answer-input.correct {
+    border-color: #198754;
+    background-color: #d1edff;
+}
+
+.answer-input.incorrect {
+    border-color: #dc3545;
+    background-color: #f8d7da;
+}
+
+/* Botones de Acción */
+.exercise-actions {
+    border-top: 1px solid #dee2e6;
+    padding-top: 1.5rem;
+}
+
+/* Modal de Resultados */
+.results-item {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 6px;
+    border-left: 4px solid #6c757d;
+}
+
+.results-item.correct {
+    border-left-color: #198754;
+    background-color: #d1edff;
+}
+
+.results-item.incorrect {
+    border-left-color: #dc3545;
+    background-color: #f8d7da;
+}
+
+.results-score {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 1rem 0;
+}
+
+.score-excellent { color: #198754; }
+.score-good { color: #fd7e14; }
+.score-poor { color: #dc3545; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .exercise-actions .d-flex {
+        flex-direction: column;
+    }
+    
+    .exercise-actions .btn {
+        margin-bottom: 0.5rem;
+    }
+}
