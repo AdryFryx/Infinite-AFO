@@ -1,5 +1,42 @@
 // Utilidades generales para la aplicación
 
+// Función para detectar si estamos en GitHub Pages
+function isGitHubPages() {
+    return window.location.hostname.includes('github.io');
+}
+
+// Función para obtener la ruta base en GitHub Pages
+function getBasePath() {
+    if (isGitHubPages()) {
+        const path = window.location.pathname;
+        const parts = path.split('/').filter(part => part);
+        if (parts.length > 1) {
+            return '/' + parts[0];
+        }
+    }
+    return '';
+}
+
+// Función para resolver rutas correctamente
+function resolvePath(path) {
+    const base = getBasePath();
+    
+    if (path.startsWith('./')) {
+        return base + path.substring(1);
+    }
+    
+    if (path.startsWith('/')) {
+        return base + path;
+    }
+    
+    return base + '/' + path;
+}
+
+// Función para redireccionar correctamente
+function redirectTo(path) {
+    window.location.href = resolvePath(path);
+}
+
 // Función para formatear fechas
 function formatDate(dateString) {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -79,8 +116,28 @@ function clearStorageData(keys) {
     }
 }
 
+// Manejar redirección desde 404.html
+function handle404Redirect() {
+    if (sessionStorage.redirect) {
+        const redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect !== window.location.href) {
+            window.history.replaceState(null, null, redirect);
+        }
+    }
+}
+
+// Inicializar manejo de rutas
+document.addEventListener('DOMContentLoaded', function() {
+    handle404Redirect();
+});
+
 // Exportar funciones para uso global
 window.AppUtils = {
+    isGitHubPages,
+    getBasePath,
+    resolvePath,
+    redirectTo,
     formatDate,
     calculatePercentage,
     generateId,

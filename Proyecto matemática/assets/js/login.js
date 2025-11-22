@@ -34,7 +34,7 @@ function validateLogin(event) {
         
         // Redirigir al dashboard después de 1 segundo
         setTimeout(() => {
-            window.location.href = 'dashboard.html';
+            window.location.href = './dashboard.html';
         }, 1000);
     } else {
         showMessage('Usuario o contraseña incorrectos', 'error');
@@ -71,20 +71,20 @@ function showMessage(message, type) {
 // Función para recuperar contraseña
 function handleForgotPassword(e) {
     e.preventDefault();
-    window.location.href = 'contraseña-olvidada.html';
+    window.location.href = './contraseña-olvidada.html';
 }
 
 // Función para manejar el registro
 function handleRegister(e) {
     e.preventDefault();
-    window.location.href = 'registrarse.html';
+    window.location.href = './registrarse.html';
 }
 
 // Función para verificar si ya hay un usuario logueado
 function checkExistingSession() {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (currentUser && window.location.pathname.includes('index.html')) {
-        window.location.href = 'dashboard.html';
+        window.location.href = './dashboard.html';
     }
 }
 
@@ -136,26 +136,6 @@ function addPasswordToggle() {
     passwordField.style.paddingRight = '40px';
 }
 
-// Función para cargar usuarios recordados
-function loadRememberedUsers() {
-    const rememberedUsers = JSON.parse(localStorage.getItem('rememberedUsers')) || [];
-    if (rememberedUsers.length > 0) {
-        // Podrías implementar un dropdown con usuarios recordados
-        console.log('Usuarios recordados:', rememberedUsers);
-    }
-}
-
-// Función para recordar usuario
-function rememberUser(username) {
-    let rememberedUsers = JSON.parse(localStorage.getItem('rememberedUsers')) || [];
-    
-    // Evitar duplicados
-    if (!rememberedUsers.includes(username)) {
-        rememberedUsers.push(username);
-        localStorage.setItem('rememberedUsers', JSON.stringify(rememberedUsers));
-    }
-}
-
 // Función para inicializar la aplicación
 function initializeApp() {
     const loginForm = document.getElementById('loginForm');
@@ -177,31 +157,9 @@ function initializeApp() {
     // Agregar funcionalidad de mostrar/ocultar contraseña
     addPasswordToggle();
     
-    // Cargar usuarios recordados
-    loadRememberedUsers();
-    
     // Verificar sesión existente
     checkExistingSession();
-    
-    // Auto-completar para desarrollo (opcional)
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        document.getElementById('username').value = 'marco';
-        document.getElementById('password').value = '1234';
-    }
 }
 
 // Inicializar cuando el DOM esté cargado
 document.addEventListener('DOMContentLoaded', initializeApp);
-
-// Manejar el evento beforeunload para limpiar si es necesario
-window.addEventListener('beforeunload', function() {
-    // Aquí podrías limpiar datos temporales si es necesario
-});
-
-// Exportar funciones para uso global (si es necesario)
-window.loginUtils = {
-    validateLogin,
-    showMessage,
-    handleForgotPassword,
-    handleRegister
-};
