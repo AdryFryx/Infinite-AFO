@@ -1,74 +1,19 @@
-// Datos de ejercicios de ejemplo
-const exercises = {
-    quadratic: {
-        title: "Movimiento Parabólico - Proyectil",
-        module: "Funciones Cuadráticas",
-        difficulty: "Intermedio",
-        description: "Analiza el movimiento de un proyectil lanzado desde el suelo",
-        image: "./assets/images/parabolic-motion.png",
-        imageCaption: "Trayectoria parabólica del proyectil",
-        context: "Un proyectil es lanzado desde el suelo con una velocidad inicial de 50 m/s con un ángulo de 45°. La altura del proyectil sigue la función: h(t) = -5t² + 35.35t",
-        questions: [
-            {
-                text: "¿Cuál es la altura máxima que alcanza el proyectil?",
-                type: "numeric",
-                answer: "62.5",
-                unit: "metros",
-                hint: "Usa la fórmula del vértice de la parábola"
-            },
-            {
-                text: "¿En qué tiempo alcanza la altura máxima?",
-                type: "numeric", 
-                answer: "3.535",
-                unit: "segundos",
-                hint: "El tiempo en el vértice es t = -b/(2a)"
-            },
-            {
-                text: "¿A qué distancia cae el proyectil?",
-                type: "numeric",
-                answer: "125",
-                unit: "metros", 
-                hint: "Encuentra cuando h(t) = 0 y calcula la distancia horizontal"
-            }
-        ]
-    },
-    trigonometric: {
-        title: "Ondas Senoidales - Muelle",
-        module: "Funciones Trigonométricas", 
-        difficulty: "Intermedio",
-        description: "Analiza el movimiento armónico simple de un muelle",
-        image: "./assets/images/sine-wave.png",
-        imageCaption: "Movimiento oscilatorio del muelle",
-        context: "Un muelle sigue un movimiento armónico simple descrito por la función: x(t) = 2·sin(πt) + 3·cos(πt), donde x es la posición en cm y t el tiempo en segundos.",
-        questions: [
-            {
-                text: "¿Cuál es la amplitud máxima del movimiento?",
-                type: "numeric",
-                answer: "3.606",
-                unit: "cm",
-                hint: "Calcula √(A² + B²) para la amplitud"
-            },
-            {
-                text: "¿Cuál es el periodo de oscilación?",
-                type: "numeric",
-                answer: "2",
-                unit: "segundos", 
-                hint: "Periodo = 2π/ω"
-            },
-            {
-                text: "¿En qué posición se encuentra en t = 0.5 segundos?",
-                type: "numeric",
-                answer: "3",
-                unit: "cm",
-                hint: "Sustituye t=0.5 en la función"
-            }
-        ]
-    }
-};
+// =============================================
+// CONFIGURACIÓN DEL BACKEND
+// =============================================
+const API_URL = "http://localhost:5000"; // Cambiar por tu backend si lo subes
+
+
+// =============================================
+// ELIMINAMOS exercises LOCAL Y AHORA TODO VIENE DESDE BACKEND
+// =============================================
+// const exercises = {...}  // ← YA NO SE USA
+
 
 // Variables globales
 let currentExercise = null;
 let currentModule = null;
+
 
 // Función para verificar autenticación
 function checkAuthentication() {
@@ -80,27 +25,37 @@ function checkAuthentication() {
     return currentUser;
 }
 
+
 // Función para cargar información del usuario
 function loadUserInfo(user) {
     const currentUserElement = document.getElementById('currentUser');
     if (currentUserElement) {
-        currentUserElement.textContent = user.name;
+        currentUserElement.textContent = user.nombre_usuario || user.name;
     }
 }
 
-// Función para cargar el ejercicio basado en el módulo
-function loadExercise() {
+
+// ============================================================
+// NUEVA FUNCIÓN loadExercise() — CARGA DESDE BACKEND
+// ============================================================
+async function loadExercise() {
     const urlParams = new URLSearchParams(window.location.search);
     const module = urlParams.get('module') || 'quadratic';
-    
     currentModule = module;
-    currentExercise = exercises[module];
-    
-    if (!currentExercise) {
+
+    try {
+        const response = await fetch(`${API_URL}/api/exercise?module=${module}`);
+        if (!response.ok) throw new Error("Error al consultar el backend");
+
+        currentExercise = await response.json();
+
+    } catch (err) {
+        console.error("Error:", err);
+        alert("No se pudo cargar el ejercicio desde el servidor.");
         window.location.href = 'dashboard.html';
         return;
     }
-    
+
     // Actualizar la interfaz con los datos del ejercicio
     document.getElementById('exerciseTitle').textContent = currentExercise.title;
     document.getElementById('moduleBadge').textContent = currentExercise.module;
@@ -109,21 +64,22 @@ function loadExercise() {
     document.getElementById('exerciseImage').src = currentExercise.image;
     document.getElementById('imageCaption').textContent = currentExercise.imageCaption;
     document.getElementById('contextText').textContent = currentExercise.context;
-    
-    // Cargar preguntas
+
+    // Cargar preguntas dinámicamente
     currentExercise.questions.forEach((question, index) => {
         const questionElement = document.getElementById(`question${index + 1}Text`);
         const answerInput = document.getElementById(`answer${index + 1}`);
-        
+
         if (questionElement) {
             questionElement.textContent = question.text;
         }
-        
+
         if (answerInput && answerInput.nextElementSibling) {
-            answerInput.nextElementSibling.textContent = question.unit;
+            answerInput.nextElementSibling.textContent = question.unit || "";
         }
     });
 }
+
 
 // Función para validar respuestas
 function validateAnswers(userAnswers) {
@@ -154,6 +110,7 @@ function validateAnswers(userAnswers) {
         totalQuestions: currentExercise.questions.length
     };
 }
+
 
 // Función para mostrar resultados
 function showResults(validationResults) {
@@ -194,12 +151,14 @@ function showResults(validationResults) {
     resultsModal.show();
 }
 
+
 // Función para obtener clase CSS según puntuación
 function getScoreClass(score) {
     if (score >= 80) return 'score-excellent';
     if (score >= 60) return 'score-good';
     return 'score-poor';
 }
+
 
 // Función para obtener mensaje de retroalimentación
 function getFeedbackMessage(score) {
@@ -214,6 +173,7 @@ function getFeedbackMessage(score) {
     }
 }
 
+
 // Función para manejar el envío del formulario
 function handleSubmit(event) {
     event.preventDefault();
@@ -224,7 +184,6 @@ function handleSubmit(event) {
         document.getElementById('answer3').value.trim()
     ];
     
-    // Validar que todas las preguntas tengan respuesta
     const emptyAnswers = userAnswers.filter(answer => answer === '');
     if (emptyAnswers.length > 0) {
         alert('Por favor responde todas las preguntas antes de enviar.');
@@ -234,11 +193,11 @@ function handleSubmit(event) {
     const validationResults = validateAnswers(userAnswers);
     showResults(validationResults);
     
-    // Guardar resultados en localStorage para estadísticas
     saveExerciseResults(validationResults);
 }
 
-// Función para guardar resultados
+
+// Guardar resultados en localStorage
 function saveExerciseResults(results) {
     const exerciseHistory = JSON.parse(localStorage.getItem('exerciseHistory')) || [];
     
@@ -255,6 +214,7 @@ function saveExerciseResults(results) {
     localStorage.setItem('exerciseHistory', JSON.stringify(exerciseHistory));
 }
 
+
 // Función para limpiar respuestas
 function resetForm() {
     document.getElementById('exerciseForm').reset();
@@ -263,15 +223,16 @@ function resetForm() {
     });
 }
 
-// Función para inicializar la página
-function initializeExercisePage() {
+
+// Inicializar página
+async function initializeExercisePage() {
     const user = checkAuthentication();
     if (!user) return;
     
     loadUserInfo(user);
-    loadExercise();
     
-    // Event listeners
+    await loadExercise(); // <--- ESPERA LA CARGA DEL BACKEND
+    
     document.getElementById('exerciseForm').addEventListener('submit', handleSubmit);
     document.getElementById('resetBtn').addEventListener('click', resetForm);
     document.getElementById('cancelBtn').addEventListener('click', () => {
@@ -285,10 +246,10 @@ function initializeExercisePage() {
         }
     });
     document.getElementById('nextExerciseBtn').addEventListener('click', function() {
-        // Recargar página con mismo módulo (en futuro: siguiente ejercicio)
         window.location.reload();
     });
 }
 
-// Inicializar cuando el DOM esté cargado
+
+// Inicializar cuando cargue el DOM
 document.addEventListener('DOMContentLoaded', initializeExercisePage);
