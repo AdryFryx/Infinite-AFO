@@ -85,65 +85,34 @@ def login():
 
 @app.get("/api/exercise")
 def get_exercise():
-
-    module_code = request.args.get("module", "quadratic")
-    limit_questions = request.args.get("limit", default=3, type=int)
+    module = request.args.get("module")
 
     conn = get_connection()
-    exercise = None
+    cursor = conn.cursor()
 
-    try:
-        with conn.cursor() as cursor:
+    cursor.execute("""
+        SELECT * FROM ejercicios 
+        WHERE codigo = %s
+    """, (module,))
+    ejercicio = cursor.fetchone()
 
-            # 1) Buscar ejercicio por código
-            cursor.execute("""
-                SELECT id_ejercicio, id_nivel, titulo, modulo, dificultad,
-                       descripcion, imagen, imagen_caption, contexto
-                FROM ejercicios
-                WHERE codigo = %s
-            """, (module_code,))
-            row = cursor.fetchone()
+    if not ejercicio:
+        return jsonify({"error": "Ejercicio no encontrado"}), 404
 
-            if not row:
-                return jsonify({"error": "Ejercicio no encontrado"}), 404
+    cursor.execute("""
+        SELECT enunciado, respuesta_correcta, unidad, pista, orden 
+        FROM preguntas 
+        WHERE id_ejercicio = %s
+        ORDER BY orden ASC
+    """, (ejercicio["id_ejercicio"],))
+    preguntas = cursor.fetchall()
 
-            exercise = {
-                "id_ejercicio": row["id_ejercicio"],
-                "id_nivel": row["id_nivel"],
-                "title": row["titulo"],
-                "module": row["modulo"],
-                "difficulty": row["dificultad"],
-                "description": row["descripcion"],
-                "image": row["imagen"],
-                "imageCaption": row["imagen_caption"],
-                "context": row["contexto"],
-                "questions": []
-            }
+    ejercicio["questions"] = preguntas
 
-            # 2) Preguntas asociadas (ALEATORIAS)
-            cursor.execute("""
-                SELECT id_pregunta, enunciado, tipo, respuesta_correcta, unidad, pista
-                FROM preguntas
-                WHERE id_ejercicio = %s
-                  AND activa = 1
-                ORDER BY RAND()
-                LIMIT %s
-            """, (exercise["id_ejercicio"], limit_questions))
+    cursor.close()
+    conn.close()
 
-            for q in cursor.fetchall():
-                exercise["questions"].append({
-                    "id": q["id_pregunta"],
-                    "text": q["enunciado"],
-                    "type": q["tipo"],                  # 'abierta' o 'multi'
-                    "answer": q["respuesta_correcta"],  # texto / número esperado
-                    "unit": q["unidad"],
-                    "hint": q["pista"]
-                })
-
-    finally:
-        conn.close()
-
-    return jsonify(exercise)
+    return jsonify(ejercicio)
 
 @app.post("/api/exercise-result")
 def save_exercise_result():

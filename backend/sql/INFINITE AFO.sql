@@ -74,15 +74,20 @@ CREATE TABLE resultados (
     FOREIGN KEY (id_ejercicio) REFERENCES ejercicios(id_ejercicio)
 );
 
-INSERT INTO ejercicios (
-    codigo, id_nivel, titulo, modulo, dificultad, descripcion,
-    imagen, imagen_caption, contexto
-)
-
 -- =========================================================
 -- Obviamente las tablas van primero, luego los insert into
 -- =========================================================
 
+INSERT INTO niveles (nombre, descripcion, orden)
+VALUES
+("Funciones Cuadráticas", "Ejercicios basados en movimiento parabólico y vértices", 1),
+("Funciones Trigonométricas", "Ejercicios basados en ondas senoidales y oscilaciones", 2);
+
+
+INSERT INTO ejercicios (
+    codigo, id_nivel, titulo, modulo, dificultad, descripcion,
+    imagen, imagen_caption, contexto
+)
 
 VALUES
 (

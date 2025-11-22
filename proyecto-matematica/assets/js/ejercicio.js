@@ -18,7 +18,7 @@ let currentModule = null;
 // Función para verificar autenticación
 function checkAuthentication() {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) {
+    if (!currentUser) {z
         window.location.href = 'index.html';
         return null;
     }
