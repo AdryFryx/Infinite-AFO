@@ -16,27 +16,24 @@ CREATE TABLE niveles (
 
 CREATE TABLE ejercicios (
     id_ejercicio INT AUTO_INCREMENT PRIMARY KEY,
-    codigo VARCHAR(50) NOT NULL UNIQUE,     
-    id_nivel INT NOT NULL,
+    codigo VARCHAR(50) NOT NULL UNIQUE,
     titulo VARCHAR(255) NOT NULL,
-    modulo VARCHAR(100) NOT NULL,          
-    dificultad VARCHAR(50),
+    modulo VARCHAR(100) NOT NULL,
+    dificultad VARCHAR(50) NOT NULL,
     descripcion TEXT,
     imagen VARCHAR(255),
     imagen_caption VARCHAR(255),
-    contexto TEXT,
-    FOREIGN KEY (id_nivel) REFERENCES niveles(id_nivel)
+    contexto TEXT
 );
 
-CREATE TABLE preguntas (
+CREATE TABLE preguntas_ejercicio (
     id_pregunta INT AUTO_INCREMENT PRIMARY KEY,
-    id_nivel INT NOT NULL,
-    id_ejercicio INT NULL,                  
-    tipo VARCHAR(20) NOT NULL DEFAULT 'abierta', 
-    respuesta_correcta VARCHAR(255) DEFAULT NULL,
-    unidad VARCHAR(50) DEFAULT NULL,        
-    pista TEXT,                            
-    FOREIGN KEY (id_nivel) REFERENCES niveles(id_nivel),
+    id_ejercicio INT NOT NULL,
+    enunciado TEXT NOT NULL,
+    tipo VARCHAR(20) DEFAULT 'numeric',
+    respuesta_correcta VARCHAR(100) NOT NULL,
+    unidad VARCHAR(50),
+    pista TEXT,
     FOREIGN KEY (id_ejercicio) REFERENCES ejercicios(id_ejercicio)
 );
 
@@ -45,7 +42,7 @@ CREATE TABLE opciones (
     id_pregunta INT NOT NULL,
     texto_opcion VARCHAR(255) NOT NULL,
     es_correcta TINYINT(1) DEFAULT 0,
-    FOREIGN KEY (id_pregunta) REFERENCES preguntas(id_pregunta)
+    FOREIGN KEY (id_pregunta) REFERENCES preguntas_ejercicio(id_pregunta)
 );
 
 CREATE TABLE intentos (
@@ -57,7 +54,7 @@ CREATE TABLE intentos (
     es_correcta TINYINT(1) NOT NULL,
     fecha_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_usuario) REFERENCES usuario(id),
-    FOREIGN KEY (id_pregunta) REFERENCES preguntas(id_pregunta),
+    FOREIGN KEY (id_pregunta) REFERENCES preguntas_ejercicio(id_pregunta),
     FOREIGN KEY (id_opcion) REFERENCES opciones(id_opcion)
 );
 
@@ -85,7 +82,7 @@ VALUES
 
 
 INSERT INTO ejercicios (
-    codigo, id_nivel, titulo, modulo, dificultad, descripcion,
+    id_ejercicio, codigo, titulo, modulo, dificultad, descripcion,
     imagen, imagen_caption, contexto
 )
 
@@ -113,50 +110,16 @@ VALUES
     'Un muelle sigue x(t) = 2·sin(πt) + 3·cos(πt), donde x es la posición en cm.'
 );
 
-INSERT INTO preguntas 
-(id_nivel, id_ejercicio, enunciado, tipo, respuesta_correcta, unidad, pista)
+INSERT INTO preguntas_ejercicio 
+(id_ejercicio, enunciado, tipo, respuesta_correcta, unidad, pista)
 VALUES
-(1, 1,
- '¿Cuál es la altura máxima que alcanza el proyectil?',
- 'abierta',
- '62.5',
- 'metros',
- 'Usa la fórmula del vértice de la parábola'),
+(1, '¿Cuál es la altura máxima que alcanza el proyectil?', 'numeric', '62.5', 'metros', 'Usa la fórmula del vértice de la parábola'),
+(1, '¿En qué tiempo alcanza la altura máxima?', 'numeric', '3.535', 'segundos', 'El tiempo en el vértice es t = -b/(2a)'),
+(1, '¿A qué distancia cae el proyectil?', 'numeric', '125', 'metros', 'Encuentra cuando h(t) = 0 y calcula la distancia horizontal');
 
-(1, 1,
- '¿En qué tiempo alcanza la altura máxima?',
- 'abierta',
- '3.535',
- 'segundos',
- 'El tiempo en el vértice es t = -b/(2a)'),
-
-(1, 1,
- '¿A qué distancia cae el proyectil?',
- 'abierta',
- '125',
- 'metros',
- 'Encuentra cuando h(t) = 0 y calcula la distancia horizontal');
-
-INSERT INTO preguntas 
-(id_nivel, id_ejercicio, enunciado, tipo, respuesta_correcta, unidad, pista)
+INSERT INTO preguntas_ejercicio 
+(id_ejercicio, enunciado, tipo, respuesta_correcta, unidad, pista)
 VALUES
-(2, 2,
- '¿Cuál es la amplitud máxima del movimiento?',
- 'abierta',
- '3.606',
- 'cm',
- 'Calcula √(A² + B²)'),
-
-(2, 2,
- '¿Cuál es el periodo de oscilación?',
- 'abierta',
- '2',
- 'segundos',
- 'Periodo = 2π/ω'),
-
-(2, 2,
- '¿En qué posición se encuentra en t = 0.5 segundos?',
- 'abierta',
- '3',
- 'cm',
- 'Sustituye t=0.5 en la función');
+(2, '¿Cuál es la amplitud máxima del movimiento?', 'numeric', '3.606', 'cm', 'Calcula √(A² + B²) para la amplitud'),
+(2, '¿Cuál es el periodo de oscilación?', 'numeric', '2', 'segundos', 'Periodo = 2π/ω'),
+(2, '¿En qué posición se encuentra en t = 0.5 segundos?', 'numeric', '3', 'cm', 'Sustituye t = 0.5 en la función');

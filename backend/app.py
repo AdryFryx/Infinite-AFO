@@ -85,34 +85,57 @@ def login():
 
 @app.get("/api/exercise")
 def get_exercise():
-    module = request.args.get("module")
+    module_code = request.args.get("module", "quadratic")
 
     conn = get_connection()
     cursor = conn.cursor()
 
+    # 1) Datos del ejercicio
     cursor.execute("""
-        SELECT * FROM ejercicios 
+        SELECT id_ejercicio, titulo, modulo, dificultad, descripcion, imagen, imagen_caption, contexto
+        FROM ejercicios
         WHERE codigo = %s
-    """, (module,))
+    """, (module_code,))
     ejercicio = cursor.fetchone()
 
     if not ejercicio:
         return jsonify({"error": "Ejercicio no encontrado"}), 404
 
+    # 2) Preguntas desde LA NUEVA TABLA
     cursor.execute("""
-        SELECT enunciado, respuesta_correcta, unidad, pista, orden 
-        FROM preguntas 
+        SELECT enunciado, tipo, respuesta_correcta, unidad, pista
+        FROM preguntas_ejercicio
         WHERE id_ejercicio = %s
-        ORDER BY orden ASC
+        ORDER BY id_pregunta ASC
     """, (ejercicio["id_ejercicio"],))
-    preguntas = cursor.fetchall()
 
-    ejercicio["questions"] = preguntas
+    preguntas_rows = cursor.fetchall()
+
+    # 3) Armar JSON que espera tu ejercicio.js
+    data = {
+        "titulo": ejercicio["titulo"],
+        "modulo": ejercicio["modulo"],
+        "dificultad": ejercicio["dificultad"],
+        "descripcion": ejercicio["descripcion"],
+        "imagen": ejercicio["imagen"],
+        "imagen_caption": ejercicio["imagen_caption"],
+        "contexto": ejercicio["contexto"],
+        "questions": []
+    }
+
+    for fila in preguntas_rows:
+        data["questions"].append({
+            "enunciado": fila["enunciado"],
+            "tipo": fila["tipo"],
+            "respuesta_correcta": fila["respuesta_correcta"],
+            "unidad": fila["unidad"],
+            "pista": fila["pista"]
+        })
 
     cursor.close()
     conn.close()
 
-    return jsonify(ejercicio)
+    return jsonify(data)
 
 @app.post("/api/exercise-result")
 def save_exercise_result():

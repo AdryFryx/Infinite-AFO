@@ -1,255 +1,221 @@
 // =============================================
 // CONFIGURACIÓN DEL BACKEND
 // =============================================
-const API_URL = "http://localhost:5000"; // Cambiar por tu backend si lo subes
-
-
-// =============================================
-// ELIMINAMOS exercises LOCAL Y AHORA TODO VIENE DESDE BACKEND
-// =============================================
-// const exercises = {...}  // ← YA NO SE USA
-
+const API_URL = "http://localhost:5000";
 
 // Variables globales
 let currentExercise = null;
 let currentModule = null;
 
-
-// Función para verificar autenticación
+// -------------------- Autenticación --------------------
 function checkAuthentication() {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) {z
-        window.location.href = 'index.html';
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (!currentUser) {
+        window.location.href = "index.html";
         return null;
     }
     return currentUser;
 }
 
-
-// Función para cargar información del usuario
 function loadUserInfo(user) {
-    const currentUserElement = document.getElementById('currentUser');
-    if (currentUserElement) {
-        currentUserElement.textContent = user.nombre_usuario || user.name;
-    }
+    const el = document.getElementById("currentUser");
+    if (el) el.textContent = user.nombre_usuario || user.name || "Estudiante";
 }
 
-
-// ============================================================
-// NUEVA FUNCIÓN loadExercise() — CARGA DESDE BACKEND
-// ============================================================
+// -------------------- Cargar ejercicio desde backend --------------------
 async function loadExercise() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const module = urlParams.get('module') || 'quadratic';
+    const params = new URLSearchParams(window.location.search);
+    const module = params.get("module") || "quadratic";
     currentModule = module;
 
     try {
-        const response = await fetch(`${API_URL}/api/exercise?module=${module}`);
-        if (!response.ok) throw new Error("Error al consultar el backend");
-
-        currentExercise = await response.json();
-
+        const res = await fetch(`${API_URL}/api/exercise?module=${module}`);
+        if (!res.ok) throw new Error("Error al consultar backend");
+        currentExercise = await res.json();
+        console.log("Ejercicio recibido desde backend:", currentExercise);
     } catch (err) {
-        console.error("Error:", err);
+        console.error(err);
         alert("No se pudo cargar el ejercicio desde el servidor.");
-        window.location.href = 'dashboard.html';
+        window.location.href = "dashboard.html";
         return;
     }
 
-    // Actualizar la interfaz con los datos del ejercicio
-    document.getElementById('exerciseTitle').textContent = currentExercise.title;
-    document.getElementById('moduleBadge').textContent = currentExercise.module;
-    document.getElementById('difficultyBadge').textContent = currentExercise.difficulty;
-    document.getElementById('exerciseDescription').textContent = currentExercise.description;
-    document.getElementById('exerciseImage').src = currentExercise.image;
-    document.getElementById('imageCaption').textContent = currentExercise.imageCaption;
-    document.getElementById('contextText').textContent = currentExercise.context;
+    // Campos del ejercicio (soporta titulo/title, etc.)
+    const title       = currentExercise.titulo       || currentExercise.title       || "Ejercicio";
+    const moduleName  = currentExercise.modulo       || currentExercise.module      || "";
+    const difficulty  = currentExercise.dificultad   || currentExercise.difficulty  || "";
+    const desc        = currentExercise.descripcion  || currentExercise.description || "";
+    const image       = currentExercise.imagen       || currentExercise.image       || "";
+    const imgCaption  = currentExercise.imagen_caption || currentExercise.imageCaption || "";
+    const contextText = currentExercise.contexto     || currentExercise.context     || "";
 
-    // Cargar preguntas dinámicamente
-    currentExercise.questions.forEach((question, index) => {
-        const questionElement = document.getElementById(`question${index + 1}Text`);
-        const answerInput = document.getElementById(`answer${index + 1}`);
+    document.getElementById("exerciseTitle").textContent      = title;
+    document.getElementById("moduleBadge").textContent        = moduleName;
+    document.getElementById("difficultyBadge").textContent    = difficulty;
+    document.getElementById("exerciseDescription").textContent= desc;
+    document.getElementById("exerciseImage").src              = image;
+    document.getElementById("imageCaption").textContent       = imgCaption;
+    document.getElementById("contextText").textContent        = contextText;
 
-        if (questionElement) {
-            questionElement.textContent = question.text;
-        }
+    // Preguntas
+    const questions = currentExercise.questions || currentExercise.preguntas || [];
+    console.log("Preguntas recibidas:", questions);
 
-        if (answerInput && answerInput.nextElementSibling) {
-            answerInput.nextElementSibling.textContent = question.unit || "";
+    questions.forEach((q, i) => {
+        const qTextEl = document.getElementById(`question${i + 1}Text`);
+        const ansInput = document.getElementById(`answer${i + 1}`);
+
+        if (!qTextEl || !ansInput) return;
+
+        const enunciado = q.enunciado || q.text || "";
+        const unidad    = q.unidad    || q.unit || "";
+        qTextEl.textContent = enunciado;
+        if (ansInput.nextElementSibling) {
+            ansInput.nextElementSibling.textContent = unidad;
         }
     });
 }
 
-
-// Función para validar respuestas
+// -------------------- Validar respuestas --------------------
 function validateAnswers(userAnswers) {
     const results = [];
     let correctCount = 0;
-    
-    currentExercise.questions.forEach((question, index) => {
-        const userAnswer = userAnswers[index];
-        const correctAnswer = question.answer;
-        const isCorrect = Math.abs(parseFloat(userAnswer) - parseFloat(correctAnswer)) < 0.01;
-        
+
+    const questions = currentExercise.questions || currentExercise.preguntas || [];
+
+    questions.forEach((q, i) => {
+        const userAns = userAnswers[i];
+
+        const correct = q.respuesta_correcta || q.answer;
+        const unit    = q.unidad || q.unit || "";
+        const hint    = q.pista  || q.hint || "";
+
+        const isCorrect =
+            !isNaN(parseFloat(userAns)) &&
+            !isNaN(parseFloat(correct)) &&
+            Math.abs(parseFloat(userAns) - parseFloat(correct)) < 0.01;
+
         if (isCorrect) correctCount++;
-        
+
         results.push({
-            question: question.text,
-            userAnswer: userAnswer,
-            correctAnswer: correctAnswer,
-            isCorrect: isCorrect,
-            unit: question.unit,
-            hint: question.hint
+            question: q.enunciado || q.text || "",
+            userAnswer: userAns,
+            correctAnswer: correct,
+            isCorrect,
+            unit,
+            hint
         });
     });
-    
+
     return {
-        results: results,
-        score: Math.round((correctCount / currentExercise.questions.length) * 100),
-        correctCount: correctCount,
-        totalQuestions: currentExercise.questions.length
+        results,
+        score: questions.length > 0
+            ? Math.round((correctCount / questions.length) * 100)
+            : 0,
+        correctCount,
+        totalQuestions: questions.length
     };
 }
 
+// -------------------- Mostrar resultados --------------------
+function getScoreClass(score) {
+    if (score >= 80) return "score-excellent";
+    if (score >= 60) return "score-good";
+    return "score-poor";
+}
 
-// Función para mostrar resultados
+function getFeedbackMessage(score) {
+    if (score === 100) return "¡Excelente! Dominas completamente este tema. 🎉";
+    if (score >= 80)   return "Muy bien, comprendes bien el concepto. 👍";
+    if (score >= 60)   return "Buen intento. Revisa los conceptos y vuelve a intentarlo. 💪";
+    return "Necesitas repasar este tema. No te rindas, sigue practicando. 📚";
+}
+
 function showResults(validationResults) {
-    const modalTitle = document.getElementById('resultsModalTitle');
-    const modalBody = document.getElementById('resultsModalBody');
-    
-    modalTitle.textContent = `Resultados - ${currentExercise.title}`;
-    
-    let resultsHTML = `
+    const modalTitle = document.getElementById("resultsModalTitle");
+    const modalBody  = document.getElementById("resultsModalBody");
+
+    modalTitle.textContent = `Resultados - ${currentExercise.titulo || currentExercise.title || ""}`;
+
+    let html = `
         <div class="results-score ${getScoreClass(validationResults.score)}">
             Puntuación: ${validationResults.score}%
         </div>
         <p>Respuestas correctas: ${validationResults.correctCount}/${validationResults.totalQuestions}</p>
     `;
-    
-    validationResults.results.forEach((result, index) => {
-        resultsHTML += `
-            <div class="results-item ${result.isCorrect ? 'correct' : 'incorrect'}">
-                <strong>Pregunta ${index + 1}:</strong> ${result.question}<br>
-                <strong>Tu respuesta:</strong> ${result.userAnswer || 'Sin responder'} ${result.unit}<br>
-                <strong>Respuesta correcta:</strong> ${result.correctAnswer} ${result.unit}<br>
-                ${!result.isCorrect ? `<small class="text-muted"><i class="fas fa-lightbulb me-1"></i>${result.hint}</small>` : ''}
+
+    validationResults.results.forEach((res, idx) => {
+        html += `
+            <div class="results-item ${res.isCorrect ? "correct" : "incorrect"}">
+                <strong>Pregunta ${idx + 1}:</strong> ${res.question}<br>
+                <strong>Tu respuesta:</strong> ${res.userAnswer || "Sin responder"} ${res.unit}<br>
+                <strong>Respuesta correcta:</strong> ${res.correctAnswer} ${res.unit}<br>
+                ${!res.isCorrect && res.hint ? `<small class="text-muted"><i class="fas fa-lightbulb me-1"></i>${res.hint}</small>` : ""}
             </div>
         `;
     });
-    
-    resultsHTML += `
+
+    html += `
         <div class="mt-3">
             <strong>Retroalimentación:</strong><br>
             ${getFeedbackMessage(validationResults.score)}
         </div>
     `;
-    
-    modalBody.innerHTML = resultsHTML;
-    
-    // Mostrar modal
-    const resultsModal = new bootstrap.Modal(document.getElementById('resultsModal'));
-    resultsModal.show();
+
+    modalBody.innerHTML = html;
+
+    const modal = new bootstrap.Modal(document.getElementById("resultsModal"));
+    modal.show();
 }
 
+// -------------------- Submit, reset, init --------------------
+function handleSubmit(e) {
+    e.preventDefault();
 
-// Función para obtener clase CSS según puntuación
-function getScoreClass(score) {
-    if (score >= 80) return 'score-excellent';
-    if (score >= 60) return 'score-good';
-    return 'score-poor';
-}
-
-
-// Función para obtener mensaje de retroalimentación
-function getFeedbackMessage(score) {
-    if (score === 100) {
-        return "¡Excelente! Dominas completamente este tema. 🎉";
-    } else if (score >= 80) {
-        return "Muy bien, comprendes bien el concepto. Sigue practicando. 👍";
-    } else if (score >= 60) {
-        return "Buen intento. Revisa los conceptos y vuelve a intentarlo. 💪";
-    } else {
-        return "Necesitas repasar este tema. No te rindas, sigue practicando. 📚";
-    }
-}
-
-
-// Función para manejar el envío del formulario
-function handleSubmit(event) {
-    event.preventDefault();
-    
     const userAnswers = [
-        document.getElementById('answer1').value.trim(),
-        document.getElementById('answer2').value.trim(),
-        document.getElementById('answer3').value.trim()
+        document.getElementById("answer1").value.trim(),
+        document.getElementById("answer2").value.trim(),
+        document.getElementById("answer3").value.trim()
     ];
-    
-    const emptyAnswers = userAnswers.filter(answer => answer === '');
-    if (emptyAnswers.length > 0) {
-        alert('Por favor responde todas las preguntas antes de enviar.');
+
+    if (userAnswers.some(a => a === "")) {
+        alert("Por favor responde todas las preguntas antes de enviar.");
         return;
     }
-    
-    const validationResults = validateAnswers(userAnswers);
-    showResults(validationResults);
-    
-    saveExerciseResults(validationResults);
+
+    const results = validateAnswers(userAnswers);
+    showResults(results);
 }
 
-
-// Guardar resultados en localStorage
-function saveExerciseResults(results) {
-    const exerciseHistory = JSON.parse(localStorage.getItem('exerciseHistory')) || [];
-    
-    const exerciseResult = {
-        date: new Date().toISOString(),
-        module: currentModule,
-        title: currentExercise.title,
-        score: results.score,
-        correctAnswers: results.correctCount,
-        totalQuestions: results.totalQuestions
-    };
-    
-    exerciseHistory.push(exerciseResult);
-    localStorage.setItem('exerciseHistory', JSON.stringify(exerciseHistory));
-}
-
-
-// Función para limpiar respuestas
 function resetForm() {
-    document.getElementById('exerciseForm').reset();
-    document.querySelectorAll('.answer-input').forEach(input => {
-        input.classList.remove('correct', 'incorrect');
+    document.getElementById("exerciseForm").reset();
+    document.querySelectorAll(".answer-input").forEach(inp => {
+        inp.classList.remove("correct", "incorrect");
     });
 }
 
-
-// Inicializar página
 async function initializeExercisePage() {
     const user = checkAuthentication();
     if (!user) return;
-    
+
     loadUserInfo(user);
-    
-    await loadExercise(); // <--- ESPERA LA CARGA DEL BACKEND
-    
-    document.getElementById('exerciseForm').addEventListener('submit', handleSubmit);
-    document.getElementById('resetBtn').addEventListener('click', resetForm);
-    document.getElementById('cancelBtn').addEventListener('click', () => {
-        window.location.href = 'dashboard.html';
+    await loadExercise();
+
+    document.getElementById("exerciseForm").addEventListener("submit", handleSubmit);
+    document.getElementById("resetBtn").addEventListener("click", resetForm);
+    document.getElementById("cancelBtn").addEventListener("click", () => {
+        window.location.href = "dashboard.html";
     });
-    document.getElementById('logoutBtn').addEventListener('click', function(e) {
+    document.getElementById("logoutBtn").addEventListener("click", e => {
         e.preventDefault();
-        if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-            localStorage.removeItem('currentUser');
-            window.location.href = 'index.html';
+        if (confirm("¿Estás seguro de que quieres cerrar sesión?")) {
+            localStorage.removeItem("currentUser");
+            window.location.href = "index.html";
         }
     });
-    document.getElementById('nextExerciseBtn').addEventListener('click', function() {
+    document.getElementById("nextExerciseBtn").addEventListener("click", () => {
         window.location.reload();
     });
 }
 
-
-// Inicializar cuando cargue el DOM
-document.addEventListener('DOMContentLoaded', initializeExercisePage);
+document.addEventListener("DOMContentLoaded", initializeExercisePage);
