@@ -1,0 +1,111 @@
+/* Estilos para páginas de autenticación (Recuperar Contraseña y Registro) */
+.auth-body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 450px;
+    padding: 20px;
+}
+
+.auth-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.project-title {
+    color: #333;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.project-subtitle {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.back-btn {
+    position: absolute;
+    left: 1.5rem;
+    top: 1.5rem;
+    color: #667eea;
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+
+.back-btn:hover {
+    color: #764ba2;
+}
+
+.auth-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 12px;
+    font-weight: 600;
+    color: white;
+    border-radius: 8px;
+}
+
+.auth-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.auth-footer {
+    border-top: 1px solid #eee;
+    padding-top: 1rem;
+}
+
+.auth-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.auth-link:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+/* Estilos para errores */
+.auth-error {
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+/* Estilos para éxito */
+.auth-success {
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 1rem;
+    background-color: #d1edff;
+    border-color: #b6d7ff;
+    color: #0c5460;
+}
+
+/* Estilos específicos para formularios */
+.password-strength {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.strength-weak { color: #dc3545; }
+.strength-medium { color: #fd7e14; }
+.strength-strong { color: #198754; }
+
+.form-check-label {
+    font-size: 0.9rem;
+}
