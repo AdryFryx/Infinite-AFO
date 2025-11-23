@@ -1,4 +1,1 @@
-pip install flask
-flask-cors
-pymysql
-werkzeug
+pip install flask flask-cors pymysql werkzeug

@@ -1,11 +1,10 @@
-# app.py
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_connection
 
 app = Flask(__name__)
-CORS(app)  # permite llamadas desde GitHub Pages o localhost front
+CORS(app)
 
 
 @app.post("/api/register")
