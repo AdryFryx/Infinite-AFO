@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_connection
+import bcrypt
+import pymysql.cursors
 
 app = Flask(__name__)
 CORS(app)
@@ -10,25 +12,27 @@ CORS(app)
 @app.post("/api/register")
 def register():
     data = request.json or {}
-
     nombre_usuario = data.get("nombre_usuario")
     correo = data.get("correo")
-    password = data.get("password")
+    contraseña = data.get("contraseña")
 
-    if not nombre_usuario or not correo or not password:
+    nivel= "basico"
+
+    if not nombre_usuario or not correo or not contraseña:
         return jsonify({"error": "Faltan datos (nombre_usuario, correo, password)"}), 400
 
-    password_hash = generate_password_hash(password)
+    hashed = bcrypt.hashpw(contraseña.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
     conn = get_connection()
+    cursor = conn.cursor()
     try:
         with conn.cursor() as cursor:
             cursor.execute(
                 """
-                INSERT INTO usuario (nombre_usuario, correo, password_hash, nivel_global)
+                INSERT INTO usuario (nombre_usuario, correo, contraseña, nivel)
                 VALUES (%s, %s, %s, %s)
                 """,
-                (nombre_usuario, correo, password_hash, 1)
+                (nombre_usuario, correo, hashed, nivel)
             )
         conn.commit()
     except Exception as e:
@@ -44,42 +48,49 @@ def register():
 def login():
     data = request.json or {}
 
-    correo = data.get("correo")
+    # Leer las mismas claves que manda el frontend
+    identifier = data.get("username")   # puede ser nombre_usuario o correo
     password = data.get("password")
 
-    if not correo or not password:
-        return jsonify({"error": "Faltan datos (correo, password)"}), 400
+    if not identifier or not password:
+        return jsonify({"error": "Faltan datos (username, password)"}), 400
 
     conn = get_connection()
-    user = None
+    # Asegúrate de que el cursor devuelva diccionarios
+    # Ej: en PyMySQL: conn.cursor(pymysql.cursors.DictCursor)
+    cursor = conn.cursor()
+
     try:
-        with conn.cursor() as cursor:
-            cursor.execute(
-                "SELECT * FROM usuario WHERE correo = %s",
-                (correo,)
-            )
-            user = cursor.fetchone()
+        cursor.execute("""
+            SELECT id, nombre_usuario, correo, contraseña, nivel
+            FROM usuario
+            WHERE nombre_usuario = %s OR correo = %s
+        """, (identifier, identifier))
+
+        user = cursor.fetchone()
+
+        if not user:
+            return jsonify({"error": "Usuario no encontrado"}), 404
+
+        # Si user es un dict (DictCursor):
+        stored_hash = user["contraseña"]
+
+        if not bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8")):
+            return jsonify({"error": "Contraseña incorrecta"}), 401
+
+        return jsonify({
+            "message": "Login exitoso",
+            "user": {
+                "id": user["id"],
+                "nombre_usuario": user["nombre_usuario"],
+                "correo": user["correo"],
+                "nivel": user["nivel"]
+            }
+        }), 200
+
     finally:
+        cursor.close()
         conn.close()
-
-    if not user:
-        return jsonify({"error": "Usuario no encontrado"}), 401
-
-    if not check_password_hash(user["password_hash"], password):
-        return jsonify({"error": "Contraseña incorrecta"}), 401
-
-    # Lo que se guarda en localStorage currentUser
-    user_data = {
-        "id": user["id"],
-        "nombre_usuario": user["nombre_usuario"],
-        "correo": user["correo"],
-        "nivel_global": user.get("nivel_global", 1)
-    }
-
-    return jsonify({
-        "message": "Login correcto",
-        "user": user_data
-    })
 
 
 @app.get("/api/exercise")
@@ -87,7 +98,7 @@ def get_exercise():
     module_code = request.args.get("module", "quadratic")
 
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)  # 👈 importante
 
     # 1) Datos del ejercicio
     cursor.execute("""
@@ -98,19 +109,19 @@ def get_exercise():
     ejercicio = cursor.fetchone()
 
     if not ejercicio:
+        cursor.close()
+        conn.close()
         return jsonify({"error": "Ejercicio no encontrado"}), 404
 
-    # 2) Preguntas desde LA NUEVA TABLA
+    # 2) Preguntas
     cursor.execute("""
         SELECT enunciado, tipo, respuesta_correcta, unidad, pista
         FROM preguntas_ejercicio
         WHERE id_ejercicio = %s
         ORDER BY id_pregunta ASC
     """, (ejercicio["id_ejercicio"],))
-
     preguntas_rows = cursor.fetchall()
 
-    # 3) Armar JSON que espera tu ejercicio.js
     data = {
         "titulo": ejercicio["titulo"],
         "modulo": ejercicio["modulo"],
@@ -126,7 +137,7 @@ def get_exercise():
         data["questions"].append({
             "enunciado": fila["enunciado"],
             "tipo": fila["tipo"],
-            "respuesta_correcta": fila["respuesta_correcta"],
+            "respuesta_correcta": float(fila["respuesta_correcta"]) if fila["respuesta_correcta"] is not None else None,
             "unidad": fila["unidad"],
             "pista": fila["pista"]
         })
@@ -135,6 +146,7 @@ def get_exercise():
     conn.close()
 
     return jsonify(data)
+
 
 @app.post("/api/exercise-result")
 def save_exercise_result():
@@ -195,6 +207,7 @@ def get_user_results(user_id):
     return jsonify(results)
 
 
+
 if __name__ == "__main__":
-    # debug=True para desarrollo; en producción pon debug=False
     app.run(host="0.0.0.0", port=5000, debug=True)
+

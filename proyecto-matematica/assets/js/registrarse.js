@@ -1,13 +1,11 @@
-// Base de datos simulada de usuarios registrados
-let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [
-    { username: 'marco', password: '1234', name: 'Marco Gonzalez', email: 'marco@infiniteafo.com' },
-    { username: 'rodrigo', password: '1234', name: 'Rodrigo Terraza', email: 'rodrigo@infiniteafo.com' },
-    { username: 'gabriel', password: '1234', name: 'Gabriel Villa', email: 'gabriel@infiniteafo.com' },
-    { username: 'matias', password: '1234', name: 'Matias Flores', email: 'matias@infiniteafo.com' }
-];
+// =============================================
+// CONFIGURACIÓN BACKEND
+// =============================================
+const API_URL = "http://localhost:5000"; // cambia si usas otro puerto
+
 
 // Función para manejar el registro
-function handleRegistration(event) {
+async function handleRegistration(event) {
     event.preventDefault();
     
     // Obtener valores del formulario
@@ -19,7 +17,7 @@ function handleRegistration(event) {
     const confirmPassword = document.getElementById('confirmPassword').value;
     const terms = document.getElementById('terms').checked;
     
-    // Validaciones
+    // Validaciones front
     if (!firstName || !lastName || !email || !username || !password || !confirmPassword) {
         showMessage('Por favor completa todos los campos', 'error');
         return;
@@ -39,39 +37,43 @@ function handleRegistration(event) {
         showMessage('Las contraseñas no coinciden', 'error');
         return;
     }
-    
-    // Verificar si el usuario ya existe
-    const userExists = registeredUsers.find(user => 
-        user.username === username || user.email === email
-    );
-    
-    if (userExists) {
-        showMessage('El nombre de usuario o correo electrónico ya está registrado', 'error');
-        return;
-    }
-    
-    // Crear nuevo usuario
-    const newUser = {
-        username: username,
-        password: password,
-        name: `${firstName} ${lastName}`,
-        email: email,
-        role: 'Estudiante',
-        registrationDate: new Date().toISOString()
+
+    // Armar el payload que espera el backend
+    const payload = {
+        nombre_usuario: username,
+        correo: email,
+        contraseña: password
     };
-    
-    // Agregar a la base de datos simulada
-    registeredUsers.push(newUser);
-    localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-    
-    // Mostrar mensaje de éxito
-    showMessage('¡Cuenta creada exitosamente! Redirigiendo al login...', 'success');
-    
-    // Redirigir al login después de 2 segundos
-    setTimeout(() => {
-        window.location.href = 'index.html';
-    }, 2000);
+
+    try {
+        const response = await fetch(`${API_URL}/api/register`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            showMessage(data.error || "No se pudo registrar el usuario", 'error');
+            return;
+        }
+
+        // Éxito
+        showMessage('¡Cuenta creada exitosamente! Redirigiendo al login...', 'success');
+
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 2000);
+
+    } catch (err) {
+        console.error("Error en registro:", err);
+        showMessage('Error de conexión con el servidor', 'error');
+    }
 }
+
 
 // Función para verificar fortaleza de contraseña
 function checkPasswordStrength(password) {
@@ -103,6 +105,7 @@ function checkPasswordStrength(password) {
     strengthIndicator.innerHTML = `Seguridad: ${feedback}`;
 }
 
+
 // Función para verificar coincidencia de contraseñas
 function checkPasswordMatch() {
     const password = document.getElementById('password').value;
@@ -120,30 +123,26 @@ function checkPasswordMatch() {
     }
 }
 
+
 // Función para mostrar mensajes
 function showMessage(message, type) {
-    // Remover mensajes anteriores
     const existingMessage = document.querySelector('.auth-message');
-    if (existingMessage) {
-        existingMessage.remove();
-    }
+    if (existingMessage) existingMessage.remove();
     
-    // Crear elemento de mensaje
     const messageDiv = document.createElement('div');
     messageDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} auth-message mt-3`;
     messageDiv.textContent = message;
     
-    // Insertar después del formulario
     const form = document.getElementById('registerForm');
     form.appendChild(messageDiv);
     
-    // Auto-remover después de 5 segundos
     setTimeout(() => {
         if (messageDiv.parentNode) {
             messageDiv.remove();
         }
     }, 5000);
 }
+
 
 // Función para inicializar la página
 function initializeRegister() {
@@ -166,7 +165,7 @@ function initializeRegister() {
         confirmPasswordInput.addEventListener('input', checkPasswordMatch);
     }
     
-    // Verificar si ya está autenticado
+    // Si ya está autenticado, mandarlo al dashboard
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (currentUser) {
         window.location.href = 'dashboard.html';

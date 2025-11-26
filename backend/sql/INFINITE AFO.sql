@@ -2,10 +2,10 @@ CREATE TABLE usuario (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre_usuario VARCHAR(50) NOT NULL,
     correo VARCHAR(100) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    nivel_global INT DEFAULT 1,          
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    contraseña VARCHAR(255) NOT NULL,
+    nivel VARCHAR(30) NOT NULL
 );
+
 
 CREATE TABLE niveles (
     id_nivel INT AUTO_INCREMENT PRIMARY KEY,
@@ -82,14 +82,18 @@ VALUES
 
 
 INSERT INTO ejercicios (
-    id_ejercicio, codigo, titulo, modulo, dificultad, descripcion,
-    imagen, imagen_caption, contexto
+    codigo,
+    titulo,
+    modulo,
+    dificultad,
+    descripcion,
+    imagen,
+    imagen_caption,
+    contexto
 )
-
 VALUES
 (
     'quadratic', 
-    1, 
     'Movimiento Parabólico - Proyectil',
     'Funciones Cuadráticas',
     'Intermedio',
@@ -100,7 +104,6 @@ VALUES
 ),
 (
     'trigonometric',
-    2,
     'Ondas Senoidales - Muelle',
     'Funciones Trigonométricas',
     'Intermedio',
