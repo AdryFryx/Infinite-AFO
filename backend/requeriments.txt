@@ -1,1 +1,4 @@
 pip install flask flask-cors pymysql werkzeug
+
+Se tiene que instalar XAMPP e ingresar todo lo que hay en la carpeta SQL para que funcione el sitio web, luego se prende la app.py
+y estaria funcionando todo correctamente
