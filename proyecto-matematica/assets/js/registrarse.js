@@ -1,14 +1,12 @@
 // =============================================
 // CONFIGURACIÓN BACKEND
 // =============================================
-const API_URL = "http://localhost:5000"; // cambia si usas otro puerto
+const API_URL = "http://localhost:5000";
 
-
-// Función para manejar el registro
+// -------------------- REGISTRO --------------------
 async function handleRegistration(event) {
     event.preventDefault();
     
-    // Obtener valores del formulario
     const firstName = document.getElementById('firstName').value.trim();
     const lastName = document.getElementById('lastName').value.trim();
     const email = document.getElementById('email').value.trim();
@@ -17,7 +15,6 @@ async function handleRegistration(event) {
     const confirmPassword = document.getElementById('confirmPassword').value;
     const terms = document.getElementById('terms').checked;
     
-    // Validaciones front
     if (!firstName || !lastName || !email || !username || !password || !confirmPassword) {
         showMessage('Por favor completa todos los campos', 'error');
         return;
@@ -38,7 +35,6 @@ async function handleRegistration(event) {
         return;
     }
 
-    // Armar el payload que espera el backend
     const payload = {
         nombre_usuario: username,
         correo: email,
@@ -48,9 +44,7 @@ async function handleRegistration(event) {
     try {
         const response = await fetch(`${API_URL}/api/register`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
 
@@ -61,7 +55,6 @@ async function handleRegistration(event) {
             return;
         }
 
-        // Éxito
         showMessage('¡Cuenta creada exitosamente! Redirigiendo al login...', 'success');
 
         setTimeout(() => {
@@ -74,8 +67,7 @@ async function handleRegistration(event) {
     }
 }
 
-
-// Función para verificar fortaleza de contraseña
+// -------------------- FORTALEZA Y COINCIDENCIA --------------------
 function checkPasswordStrength(password) {
     const strengthIndicator = document.getElementById('passwordStrength');
     if (!strengthIndicator) return;
@@ -105,8 +97,6 @@ function checkPasswordStrength(password) {
     strengthIndicator.innerHTML = `Seguridad: ${feedback}`;
 }
 
-
-// Función para verificar coincidencia de contraseñas
 function checkPasswordMatch() {
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
@@ -123,8 +113,7 @@ function checkPasswordMatch() {
     }
 }
 
-
-// Función para mostrar mensajes
+// -------------------- MENSAJES --------------------
 function showMessage(message, type) {
     const existingMessage = document.querySelector('.auth-message');
     if (existingMessage) existingMessage.remove();
@@ -143,8 +132,7 @@ function showMessage(message, type) {
     }, 5000);
 }
 
-
-// Función para inicializar la página
+// -------------------- INICIALIZAR --------------------
 function initializeRegister() {
     const form = document.getElementById('registerForm');
     const passwordInput = document.getElementById('password');
@@ -165,13 +153,11 @@ function initializeRegister() {
         confirmPasswordInput.addEventListener('input', checkPasswordMatch);
     }
     
-    // Si ya está autenticado, mandarlo al dashboard
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (currentUser) {
         window.location.href = 'dashboard.html';
     }
     
-    // Crear elementos de feedback si no existen
     if (!document.getElementById('passwordStrength')) {
         const strengthDiv = document.createElement('div');
         strengthDiv.id = 'passwordStrength';
@@ -187,5 +173,4 @@ function initializeRegister() {
     }
 }
 
-// Inicializar cuando el DOM esté cargado
 document.addEventListener('DOMContentLoaded', initializeRegister);

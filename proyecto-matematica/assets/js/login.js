@@ -1,14 +1,13 @@
 // =============================================
 // CONFIGURACIÓN DEL BACKEND
 // =============================================
-const API_URL = "http://localhost:5000"; // ajusta si tu Flask está en otro puerto
+const API_URL = "http://localhost:5000";
 
-
-// Función para validar el login contra el backend
+// -------------------- LOGIN --------------------
 async function validateLogin(event) {
     event.preventDefault();
     
-    const username = document.getElementById('username').value.trim(); // puede ser usuario o correo
+    const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
 
     if (!username || !password) {
@@ -21,7 +20,7 @@ async function validateLogin(event) {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                username: username,  // el back lo recibe como "identifier"
+                username: username,
                 password: password
             })
         });
@@ -33,17 +32,14 @@ async function validateLogin(event) {
             return;
         }
 
-        // Login exitoso
         const user = data.user;
 
-        // Guardar usuario en localStorage para usarlo en el dashboard/ejercicios
         const userSession = {
             id: user.id,
             username: user.nombre_usuario,
-            name: user.nombre_usuario,   // para compatibilidad con otros JS que usan .name
+            name: user.nombre_usuario,
             email: user.correo,
-            nivel: user.nivel,
-            role: 'Estudiante'
+            nivel: user.nivel
         };
 
         localStorage.setItem('currentUser', JSON.stringify(userSession));
@@ -60,46 +56,38 @@ async function validateLogin(event) {
     }
 }
 
-
-// Función para mostrar mensajes
+// -------------------- MENSAJES --------------------
 function showMessage(message, type) {
-    const existingMessage = document.querySelector('.login-message');
-    if (existingMessage) {
-        existingMessage.remove();
-    }
-    
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} login-message mt-3`;
-    messageDiv.textContent = message;
-    
+    const existing = document.querySelector('.login-message');
+    if (existing) existing.remove();
+
+    const div = document.createElement('div');
+    div.className = `alert alert-${type === 'success' ? 'success' : 'danger'} login-message mt-3`;
+    div.textContent = message;
+
     const form = document.getElementById('loginForm');
-    form.appendChild(messageDiv);
-    
+    form.appendChild(div);
+
     if (type === 'success') {
         setTimeout(() => {
-            if (messageDiv.parentNode) {
-                messageDiv.remove();
-            }
-        }, 5000);
+            if (div.parentNode) div.remove();
+        }, 4000);
     }
 }
 
-
-// Función para recuperar contraseña
+// -------------------- NAVEGACIÓN EXTRA --------------------
 function handleForgotPassword(e) {
-    e.preventDefault();
-    window.location.href = './contraseña-olvidada.html';
+    // enlace principal ya existe en el <a>, esto es opcional
+    // si quieres controlar aquí:
+    // e.preventDefault();
+    // window.location.href = './contrasena-olvidada.html';
 }
 
-
-// Función para manejar el registro
 function handleRegister(e) {
-    e.preventDefault();
-    window.location.href = './registrarse.html';
+    // idem, el <a> ya tiene href
 }
 
-
-// Función para verificar si ya hay un usuario logueado
+// -------------------- SESIÓN EXISTENTE --------------------
 function checkExistingSession() {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (currentUser && window.location.pathname.includes('index.html')) {
@@ -107,75 +95,25 @@ function checkExistingSession() {
     }
 }
 
-
-// Función para mostrar/ocultar contraseña
-function togglePasswordVisibility() {
-    const passwordInput = document.getElementById('password');
-    const toggleIcon = document.getElementById('togglePassword');
-    
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        toggleIcon.className = 'fas fa-eye-slash';
-    } else {
-        passwordInput.type = 'password';
-        toggleIcon.className = 'fas fa-eye';
-    }
-}
-
-
-// Función para agregar el icono de mostrar/ocultar contraseña
-function addPasswordToggle() {
-    const passwordField = document.getElementById('password');
-    if (!passwordField) return;
-    
-    const passwordContainer = document.createElement('div');
-    passwordContainer.className = 'password-container position-relative';
-    
-    passwordField.parentNode.insertBefore(passwordContainer, passwordField);
-    passwordContainer.appendChild(passwordField);
-    
-    const toggleIcon = document.createElement('span');
-    toggleIcon.id = 'togglePassword';
-    toggleIcon.className = 'fas fa-eye password-toggle';
-    toggleIcon.style.cssText = `
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        cursor: pointer;
-        color: #666;
-        z-index: 10;
-    `;
-    toggleIcon.addEventListener('click', togglePasswordVisibility);
-    
-    passwordContainer.appendChild(toggleIcon);
-    
-    passwordField.style.paddingRight = '40px';
-}
-
-
-// Función para inicializar la aplicación
+// -------------------- INICIALIZACIÓN --------------------
 function initializeApp() {
     const loginForm = document.getElementById('loginForm');
     const forgotPasswordBtn = document.getElementById('forgotPassword');
     const registerBtn = document.getElementById('register');
-    
+
     if (loginForm) {
         loginForm.addEventListener('submit', validateLogin);
     }
-    
+
     if (forgotPasswordBtn) {
         forgotPasswordBtn.addEventListener('click', handleForgotPassword);
     }
-    
+
     if (registerBtn) {
         registerBtn.addEventListener('click', handleRegister);
     }
-    
-    addPasswordToggle();
+
     checkExistingSession();
 }
 
-
-// Inicializar cuando el DOM esté cargado
 document.addEventListener('DOMContentLoaded', initializeApp);
