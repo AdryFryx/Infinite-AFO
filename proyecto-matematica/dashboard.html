@@ -4,9 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>INFINITE AFO - Dashboard</title>
+
+    <!-- Bootstrap & FontAwesome -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Tus estilos -->
     <link rel="stylesheet" href="./assets/css/dashboard.css">
 </head>
 <body class="dashboard-body">
@@ -27,7 +32,7 @@
                     <ul class="dropdown-menu">
                         <li>
                             <a class="dropdown-item" href="./dashboard.html">
-                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                <i class="fas fa-tachometer-alt me-2"></i>Panel principal
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
@@ -68,13 +73,13 @@
                     </div>
                 </div>
 
-                <!-- Métrica rápida (puede quedar estática o luego la haces dinámica) -->
-                <div class="metric-card mt-3">
+                <!-- Métrica rápida lateral -->
+                <div class="metric-card mt-3" id="generalMetricCard">
                     <h6><i class="fas fa-tachometer-alt me-2"></i>Rendimiento General</h6>
                     <div class="progress mb-2">
-                        <div class="progress-bar bg-success" style="width: 78%"></div>
+                        <div class="progress-bar bg-success" id="generalProgressBar"></div>
                     </div>
-                    <small>Tasa de acierto (ejemplo): 78%</small>
+                    <small id="generalText">Tasa de acierto: 0%</small>
                 </div>
             </div>
 
@@ -90,8 +95,11 @@
 
                 <!-- Modules Section -->
                 <div id="modulesSection">
-                    <h4 class="mb-4"><i class="fas fa-cubes me-2"></i>Módulos de Aprendizaje</h4>
+                    <h4 class="mb-4">
+                        <i class="fas fa-cubes me-2"></i>Módulos de Aprendizaje
+                    </h4>
                     <div class="row">
+                        <!-- Módulo Cuadráticas -->
                         <div class="col-md-6 mb-4">
                             <div class="module-card">
                                 <div class="module-icon bg-primary">
@@ -103,9 +111,9 @@
                                 </p>
                                 <div class="module-progress">
                                     <div class="progress mb-2">
-                                        <div class="progress-bar" style="width: 65%"></div>
+                                        <div class="progress-bar"></div>
                                     </div>
-                                    <small>Ejemplo: 65% completado</small>
+                                    <small>Sin datos aún</small>
                                 </div>
                                 <button class="btn btn-primary mt-3 start-module-btn" data-module="quadratic">
                                     <i class="fas fa-play me-2"></i>Iniciar Práctica
@@ -113,6 +121,7 @@
                             </div>
                         </div>
 
+                        <!-- Módulo Trigonométricas -->
                         <div class="col-md-6 mb-4">
                             <div class="module-card">
                                 <div class="module-icon bg-success">
@@ -124,9 +133,9 @@
                                 </p>
                                 <div class="module-progress">
                                     <div class="progress mb-2">
-                                        <div class="progress-bar" style="width: 30%"></div>
+                                        <div class="progress-bar"></div>
                                     </div>
-                                    <small>Ejemplo: 30% completado</small>
+                                    <small>Sin datos aún</small>
                                 </div>
                                 <button class="btn btn-success mt-3 start-module-btn" data-module="trigonometric">
                                     <i class="fas fa-play me-2"></i>Iniciar Práctica
@@ -138,7 +147,9 @@
 
                 <!-- Progress Section -->
                 <div id="progressSection" style="display: none;">
-                    <h4 class="mb-4"><i class="fas fa-chart-line me-2"></i>Análisis de Progreso</h4>
+                    <h4 class="mb-4">
+                        <i class="fas fa-chart-line me-2"></i>Análisis de Progreso
+                    </h4>
                     
                     <!-- Gráfico Principal -->
                     <div class="card mb-4">
@@ -150,42 +161,49 @@
                         </div>
                     </div>
 
-                    <!-- Métricas Detalladas (pueden ser estáticas o luego dinámicas) -->
+                    <!-- Métricas Detalladas -->
                     <div class="row">
+                        <!-- Precisión -->
                         <div class="col-md-6">
                             <div class="metric-card">
                                 <h6><i class="fas fa-bullseye me-2"></i>Precisión en Ejercicios</h6>
                                 <div class="progress mb-2">
-                                    <div class="progress-bar bg-info" style="width: 82%"></div>
+                                    <div class="progress-bar bg-info" id="precisionProgress"></div>
                                 </div>
-                                <small>Ejemplo: 82% de respuestas correctas</small>
+                                <small id="precisionText">Sin datos aún</small>
                             </div>
                         </div>
+
+                        <!-- Tiempo de dedicación -->
                         <div class="col-md-6">
                             <div class="metric-card">
                                 <h6><i class="fas fa-clock me-2"></i>Tiempo de Dedicación</h6>
                                 <div class="progress mb-2">
-                                    <div class="progress-bar bg-warning" style="width: 65%"></div>
+                                    <div class="progress-bar bg-warning" id="timeProgress"></div>
                                 </div>
-                                <small>Ejemplo: 45 minutos promedio por sesión</small>
+                                <small id="timeText">Sin datos aún</small>
                             </div>
                         </div>
+
+                        <!-- Participación -->
                         <div class="col-md-6">
                             <div class="metric-card">
                                 <h6><i class="fas fa-tasks me-2"></i>Participación Activa</h6>
                                 <div class="progress mb-2">
-                                    <div class="progress-bar bg-success" style="width: 90%"></div>
+                                    <div class="progress-bar bg-success" id="participationProgress"></div>
                                 </div>
-                                <small>Ejemplo: 90% de actividades completadas</small>
+                                <small id="participationText">Sin datos aún</small>
                             </div>
                         </div>
+
+                        <!-- Interacción -->
                         <div class="col-md-6">
                             <div class="metric-card">
                                 <h6><i class="fas fa-chart-bar me-2"></i>Interacción con Recursos</h6>
                                 <div class="progress mb-2">
-                                    <div class="progress-bar bg-primary" style="width: 75%"></div>
+                                    <div class="progress-bar bg-primary" id="interactionProgress"></div>
                                 </div>
-                                <small>Ejemplo: 75% de recursos utilizados</small>
+                                <small id="interactionText">Sin datos aún</small>
                             </div>
                         </div>
                     </div>
@@ -193,7 +211,9 @@
 
                 <!-- History Section -->
                 <div id="historySection" style="display: none;">
-                    <h4 class="mb-4"><i class="fas fa-history me-2"></i>Historial de Prácticas</h4>
+                    <h4 class="mb-4">
+                        <i class="fas fa-history me-2"></i>Historial de Prácticas
+                    </h4>
                     <div class="card">
                         <div class="card-body">
                             <div class="table-responsive">
@@ -201,14 +221,14 @@
                                     <thead>
                                         <tr>
                                             <th>Fecha</th>
-                                            <th>Módulo / Nivel</th>
-                                            <th>Preguntas</th>
+                                            <th>Módulo</th>
+                                            <th>Ejercicios</th>
                                             <th>Aciertos</th>
-                                            <th>Puntaje</th>
+                                            <th>Tiempo</th>
                                         </tr>
                                     </thead>
                                     <tbody id="historyTable">
-                                        <!-- Se llena con dashboard.js -->
+                                        <!-- Se llena con JS -->
                                     </tbody>
                                 </table>
                             </div>
@@ -216,10 +236,12 @@
                     </div>
                 </div>
             </div> <!-- /col-md-9 -->
-        </div>
-    </div>
+        </div> <!-- /row -->
+    </div> <!-- /container -->
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="./assets/js/utils.js"></script>
     <script src="./assets/js/dashboard.js"></script>
 </body>
 </html>
