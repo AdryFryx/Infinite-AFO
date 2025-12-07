@@ -42,7 +42,7 @@ def register():
     try:
         cursor.execute(
             """
-            INSERT INTO usuario (nombre_usuario, correo, contrasena, nivel)
+            INSERT INTO usuario (nombre_usuario, correo, contraseña, nivel)
             VALUES (%s, %s, %s, %s)
             """,
             (nombre_usuario, correo, hashed, nivel)
@@ -82,7 +82,7 @@ def login():
     try:
         cursor.execute(
             """
-            SELECT id, nombre_usuario, correo, contrasena, nivel
+            SELECT id, nombre_usuario, correo, contraseña, nivel
             FROM usuario
             WHERE nombre_usuario = %s OR correo = %s
             """,
@@ -93,7 +93,7 @@ def login():
         if not user:
             return jsonify({"error": "Usuario no encontrado"}), 404
 
-        stored_hash = user["contrasena"]
+        stored_hash = user["contraseña"]
 
         if not bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8")):
             return jsonify({"error": "Contraseña incorrecta"}), 401
