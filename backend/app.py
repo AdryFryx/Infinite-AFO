@@ -3,8 +3,7 @@ from flask_cors import CORS
 from db import get_connection
 import bcrypt
 import pymysql.cursors
-import random
-import math
+
 
 app = Flask(__name__)
 CORS(app)
